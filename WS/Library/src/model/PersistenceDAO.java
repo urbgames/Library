@@ -179,4 +179,14 @@ public class PersistenceDAO {
 		manager.remove(manager.merge(annotation));
 		manager.getTransaction().commit();
 	}
+
+	public List getAllAnnotations() {
+		String queryBase = "select distinct article from Annotation annotation inner join annotation.article article where annotation.id in (select annotation.id from Annotation annotation)";
+		Session session = manager.unwrap(Session.class);
+		Query query = session.createQuery(queryBase);
+		List<Article> annotations = query.list();
+		session.close();
+		return annotations;
+	}
+	
 }

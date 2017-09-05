@@ -44,7 +44,7 @@
                 title: 'Tags'
             }, {
                 field: 'article',
-                title: 'Artigo'
+                title: 'Obra'
             }, {
                 field: 'citation',
                 title: 'Citação'
@@ -106,7 +106,7 @@
             _.map(val.annotations, function (val2, i2) {
                 var tagsSelected = _.map($("#searchTags").find("option:selected"), function (val, i) { return val.value });
                 var tagsAnnotations = _.map(val2.tags, function (val3, i3) { return val3.id });
-                if (!_.isEmpty(_.intersection(_.map(tagsSelected, _.ary(parseInt, 1)), tagsAnnotations))) {
+                if (!_.isEmpty(_.intersection(_.map(tagsSelected, _.ary(parseInt, 1)), tagsAnnotations)) || _.isEmpty(tagsSelected)) {
                     var tags = _.map(val2.tags, function (val3, i) {
                         return "<li>" + val3.name + "</li>"
                     }).join('');
@@ -131,6 +131,7 @@
             contentType: "application/json; charset=utf-8",
             url: localServer + "getAnnotationsByTag",
             success: function (data) {
+                console.log(data);
                 loadTableAnnotation(data);
             },
             error: function (data) {

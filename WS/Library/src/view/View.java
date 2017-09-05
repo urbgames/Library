@@ -105,7 +105,7 @@ public class View {
 		persistenceDAO.removeArticle(article);
 		return article;
 	}
-	
+
 	@POST
 	@Path("/createAnnotation")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -114,7 +114,7 @@ public class View {
 		persistenceDAO.createAnnotation(annotation);
 		return annotation;
 	}
-	
+
 	@POST
 	@Path("/removeAnnotations")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -123,7 +123,7 @@ public class View {
 		persistenceDAO.removeAnnotations(annotation);
 		return annotation;
 	}
-	
+
 	@POST
 	@Path("/getArticlesByCriteria")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -131,7 +131,7 @@ public class View {
 	public List getArticlesByCriteria(CriteriaSearch criteriaSearch) {
 		return persistenceDAO.getArticlesByCriteria(criteriaSearch);
 	}
-	
+
 	@POST
 	@Path("/getArticleById")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -139,15 +139,18 @@ public class View {
 	public Article getArticleById(Integer id) {
 		return persistenceDAO.getArticleById(id);
 	}
-	
+
 	@POST
 	@Path("/getAnnotationsByTag")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public List getAnnotationsByTag(CriteriaSearch criteriaSearch) {
-		return persistenceDAO.getAnnotationsByTag(criteriaSearch);
+		if (criteriaSearch.getTags().size() > 0)
+			return persistenceDAO.getAnnotationsByTag(criteriaSearch);
+		else
+			return persistenceDAO.getAllAnnotations();
 	}
-	
+
 	@POST
 	@Path("/updateAnnotation")
 	@Consumes(MediaType.APPLICATION_JSON)
