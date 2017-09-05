@@ -1,0 +1,20 @@
+package objects;
+
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;;
+
+public class Tag {
+	
+	@Id
+	@GeneratedValue
+	private int id;
+	private String nome;
+	public String getNome() {
+		return nome;
+	}
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	
+}

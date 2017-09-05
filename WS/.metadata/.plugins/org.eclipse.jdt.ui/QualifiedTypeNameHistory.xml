@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="org.codehaus.jackson.annotate.JsonIgnore"/>
+<fullyQualifiedTypeName name="javax.management.Notification"/>
+<fullyQualifiedTypeName name="model.PersistenceDAO"/>
+<fullyQualifiedTypeName name="javax.ws.rs.POST"/>
+<fullyQualifiedTypeName name="org.hibernate.annotations.CascadeType"/>
+<fullyQualifiedTypeName name="javax.persistence.FetchType"/>
+<fullyQualifiedTypeName name="javax.persistence.Table"/>
+<fullyQualifiedTypeName name="org.codehaus.jackson.annotate.JsonBackReference"/>
+<fullyQualifiedTypeName name="javax.persistence.CascadeType"/>
+<fullyQualifiedTypeName name="javax.persistence.Column"/>
+<fullyQualifiedTypeName name="java.util.List"/>
+<fullyQualifiedTypeName name="org.hibernate.criterion.Restrictions"/>
+<fullyQualifiedTypeName name="java.util.Set"/>
+<fullyQualifiedTypeName name="objects.CriteriaSearch"/>
+<fullyQualifiedTypeName name="java.lang.InternalError"/>
+<fullyQualifiedTypeName name="objects.Tag"/>
+<fullyQualifiedTypeName name="java.lang.Integer"/>
+<fullyQualifiedTypeName name="objects.Article"/>
+<fullyQualifiedTypeName name="org.codehaus.jackson.annotate.JsonManagedReference"/>
+<fullyQualifiedTypeName name="org.hibernate.annotations.Cascade"/>
+<fullyQualifiedTypeName name="org.hibernate.annotations.OnDelete"/>
+<fullyQualifiedTypeName name="objects.Annotation"/>
+<fullyQualifiedTypeName name="org.hibernate.context.spi.CurrentSessionContext"/>
+<fullyQualifiedTypeName name="org.codehaus.jettison.mapped.Configuration"/>
+<fullyQualifiedTypeName name="org.hibernate.SessionFactory"/>
+<fullyQualifiedTypeName name="org.hibernate.cfg.Configuration"/>
+</qualifiedTypeNameHistroy>

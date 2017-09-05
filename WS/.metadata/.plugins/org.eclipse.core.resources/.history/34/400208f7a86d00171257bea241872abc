@@ -1,0 +1,9 @@
+package objects;
+
+import java.util.Set;
+
+public class CriteriaSearch {
+	
+	private Set<String> tags;
+
+}

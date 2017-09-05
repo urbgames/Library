@@ -1,0 +1,65 @@
+package view;
+
+import java.util.List;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.ext.Provider;
+
+import model.PersistenceDAO;
+import objects.Article;
+import objects.Tag;
+
+@Path("")
+@Provider
+public class View {
+
+	PersistenceDAO persistenceDAO = new PersistenceDAO();
+
+	@GET
+	@Path("/teste")
+	@Produces("application/json; charset=UTF-8")
+	public String getClassificacao() {
+		return "Olá";
+	}
+
+	@POST
+	@Path("/createTag")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Tag createTag(Tag tag) {
+		persistenceDAO.createTag(tag);
+		return tag;
+	}
+	
+	@POST
+	@Path("/createArticle")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Article createArticle(Article article) {
+		persistenceDAO.createArticle(article);
+		return article;
+	}
+
+	@GET
+	@Path("/createTag")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Tag findTagByName(Tag tag) {
+		persistenceDAO.findTagByName(tag.getName());
+		return tag;
+	}
+
+
+	@GET
+	@Path("/createTag")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List getAllTags() {
+		return persistenceDAO.getAllTags();
+	}
+	
+}

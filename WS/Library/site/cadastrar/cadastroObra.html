@@ -1,0 +1,179 @@
+<html>
+
+<head>
+    <title>Library</title>
+</head>
+<script src="../js/jquery-3.2.1.min.js"></script>
+<script src="../js/bootstrap.min.js"></script>
+<script src="../js/Util.js"></script>
+<script src="../js/lodash.min.js"></script>
+<link rel="stylesheet" type="text/css" href="../css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+
+<script>
+    var localServer = "http://localhost:8080/Library/"
+
+    $(document).ready(function () {
+        $("#form").submit(function (e) {
+            return false;
+        });
+        getAllTags();
+    });
+
+    function updateInfoSelectTags(options) {
+        $('#form').trigger("reset");
+        $("#selectTags option").remove();
+        optionsSelectTags = options;
+        options = _.sortBy(options, ['name']);
+        $(options).map(function (i, val) {
+            $("#selectTags").append('<option value=' + val.id + '>' + val.name + '</option>');
+        });
+    }
+
+    function getAllTags() {
+        $.ajax({
+            dataType: 'json',
+            crossDomain: true,
+            contentType: "application/json; charset=utf-8",
+            url: localServer + "getAllTags",
+            success: function (data) {
+                updateInfoSelectTags(data);
+            },
+            error: function (data) {
+                alert("Ocorreu um erro ao listar as Tags");
+            }
+        });
+    }
+    function formIsValid() {
+        var valid = $("[required]").map(function (val, i) {
+            if ($(i).val() == "")
+                return false;
+        });
+        if (valid.length > 0)
+            return false;
+        else
+            return true
+    }
+
+    function createArticle() {
+        if (formIsValid()) {
+            var object = $("form").serializeArray();
+            var data = {};
+            $(object).each(function (index, obj) {
+                data[obj.name] = obj.value;
+            });
+
+            data["tags"] = [];
+            $("#selectTags").find("option:selected").map(function (i, val) {
+                var tag = {};
+                tag.id = val.value;
+                tag.name = val.text;
+                data["tags"].push(tag);
+            });
+
+            $.ajax({
+                type: "POST",
+                dataType: 'json',
+                crossDomain: true,
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(data),
+                url: localServer + "createArticle",
+                success: function (data) {
+                    alert("Artigo cadastrado com sucesso!");
+                    $('#form').trigger("reset");
+                },
+                error: function (data) {
+                    alert("Ocorreu um erro ao cadastrar o Artigo");
+                }
+            });
+        }
+    }
+
+</script>
+
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="../index.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Cadastrar <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="cadastroTag.html">Tag</a></li>
+                            <li><a href="cadastroObra.html">Obra</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Consulta <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="../consultar/consultaTag.html">Tag</a></li>
+                            <li><a href="../consultar/consultaObra.html">Obra</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <form id="form" class="form-horizontal">
+        <div class="form-group has-success">
+            <label class="control-label col-md-4">Cadastro de Artigo</label>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4">Nome</label>
+            <div class="controls col-md-4 ">
+                <input class="form-control" name="name" id="namecreateArticle" placeholder="Digite o nome da obra" type="text" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4">Autores</label>
+            <div class="controls col-md-4 ">
+                <input class="form-control" name="authors" id="namecreateArticle" placeholder="Digite o nome dos autores" type="text" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4">Citação</label>
+            <div class="controls col-md-4 ">
+                <textarea class="form-control" name="citation" id="namecreateArticle" placeholder="Digite a citação da obra" type="text"
+                    required></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4">Ano de publicação</label>
+            <div class="controls col-md-4 ">
+                <input class="form-control" name="year" id="namecreateArticle" placeholder="Digite o ano de publicação" type="text" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4">Revista ou evento de publicação</label>
+            <div class="controls col-md-4 ">
+                <input class="form-control" name="journalOrEvent" id="namecreateArticle" placeholder="Digite a revista ou evento onde o artigo foi publicado"
+                    type="text" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4">Local do arquivo</label>
+            <div class="controls col-md-4 ">
+                <input class="form-control" name="localStorage" id="namecreateArticle" placeholder="Digite o local onde o arquivo está armazenado"
+                    type="text" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-4">Tags</label>
+            <div class="controls col-md-4 ">
+                <select multiple id="selectTags" size=10 class="form-control">
+            </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-4"></label>
+            <div class="controls col-md-4 ">
+                <button class="btn btn-primary" onclick="createArticle()">Cadastrar</button>
+            </div>
+        </div>
+
+    </form>
+</body>
+
+</html>

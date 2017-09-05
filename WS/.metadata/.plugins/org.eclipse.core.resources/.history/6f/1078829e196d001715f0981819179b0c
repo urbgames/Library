@@ -1,0 +1,47 @@
+package objects;
+
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import org.codehaus.jackson.annotate.JsonBackReference;
+
+@Entity
+@Table
+public class Annotation {
+
+	@Id
+	@GeneratedValue
+	private int id;
+	private String annotations;
+	
+	@ManyToOne(fetch=FetchType.EAGER, cascade=CascadeType.REMOVE)
+//	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name="article_id")
+	@JsonBackReference
+	private Article article;
+	
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getAnnotations() {
+		return annotations;
+	}
+	public void setAnnotations(String annotations) {
+		this.annotations = annotations;
+	}
+	public Article getArticle() {
+		return article;
+	}
+	public void setArticle(Article article) {
+		this.article = article;
+	}
+	
+}

@@ -1,0 +1,7 @@
+package objects;
+
+public class CriteriaSearch {
+	
+	private Set<String> tags;
+
+}

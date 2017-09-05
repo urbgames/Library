@@ -1,0 +1,41 @@
+package model;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
+import objects.Annotation;
+import objects.Article;
+import objects.CriteriaSearch;
+import objects.Tag;
+
+public class PersistenceDAO {
+
+	EntityManagerFactory factory = Persistence.createEntityManagerFactory("library");
+	EntityManager manager = factory.createEntityManager();
+	SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
+
+	public void createTag(Tag tag) {
+		manager.getTransaction().begin();
+		manager.persist(tag);
+		manager.getTransaction().commit();
+	}
+
+	public List findTagByName(String name) {
+		Session session = manager.unwrap(Session.class);
+		String hql = "from article where name like :name";
+		Query query = session.createQuery(hql);
+		query.setString("name", "%" + name + "%");
+		session.close();
+		return query.list();
+	}
+
+	public List getAllTags() {
+		Session session = sessionFactory.openSession();

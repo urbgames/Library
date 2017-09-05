@@ -1,0 +1,510 @@
+<html>
+
+<head>
+    <title>Library</title>
+</head>
+<script src="../js/jquery-3.2.1.min.js"></script>
+<script src="../js/bootstrap.min.js"></script>
+<script src="../js/lodash.min.js"></script>
+<script src="../js/select2.min.js"></script>
+<link rel="stylesheet" type="text/css" href="../css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/select2.min.css">
+
+<script>
+    var localServer = "http://localhost:8080/Library/";
+    var articles = [];
+    var dataTokenTags = [];
+    var dataTokenTagsToAnnotationsFromArticle = []
+
+    $(document).ready(function () {
+        $('[data-toggle="popover"]').popover();
+        $("#form").submit(function (e) {
+            return false;
+        });
+        $('#selectTags').select2();
+        $('#criteriaSearchTags').select2();
+        $('#selectTagsToAnnotations').select2();
+        getAllTags();
+        loadInfoLogicalSelect();
+
+    });
+
+    function getAllTags() {
+        $.ajax({
+            dataType: 'json',
+            crossDomain: true,
+            contentType: "application/json; charset=utf-8",
+            url: localServer + "getAllTags",
+            success: function (data) {
+                loadOptionsTags(data);
+            },
+            error: function (data) {
+                alert("Ocorreu um erro ao listar as Tags");
+            }
+        });
+    }
+
+    function updateInfoSelectTagsToAnnotations(options) {
+        $("#selectTagsToAnnotations option").remove();
+        $(options).map(function (i, val) {
+            $("#selectTagsToAnnotations").append('<option selected value=' + val.id + '>' + val.name + '</option>');
+        });
+        $("#selectTagsToAnnotations").select2("destroy");
+        $('#selectTagsToAnnotations').select2({ data: dataTokenTagsToAnnotationsFromArticle });
+    }
+
+    function loadOptionsTagsToAnnotations(tags) {
+        dataTokenTagsToAnnotationsFromArticle.length = 0;
+        _.map(tags, function (val, i) {
+            tag = {}
+            tag.id = val.id;
+            tag.text = val.name;
+            dataTokenTagsToAnnotationsFromArticle.push(tag);
+        });
+        $('#selectTagsToAnnotations').empty();
+        $('#selectTagsToAnnotations').select2({ data: dataTokenTagsToAnnotationsFromArticle });
+    }
+
+    function clearTagstoAnnotations() {
+        $("#selectTagsToAnnotations").val(null).trigger("change");
+    }
+
+    function updateInfoSelectTags(options) {
+        $('#form').trigger("reset");
+        $("#selectTags option").remove();
+        $(options).map(function (i, val) {
+            $("#selectTags").append('<option selected value=' + val.id + '>' + val.name + '</option>');
+        });
+        $("#selectTags").select2("destroy");
+        $('#selectTags').select2({ data: dataTokenTags });
+    }
+
+    function loadOptionsTags(tags) {
+        _.map(tags, function (val, i) {
+            tag = {}
+            tag.id = val.id;
+            tag.text = val.name;
+            dataTokenTags.push(tag);
+        });
+        $('#selectTags').select2({ data: dataTokenTags });
+        $('#criteriaSearchTags').select2({ data: dataTokenTags });
+
+    }
+
+    function loadFieldsArticle(event) {
+        $.ajax({
+            dataType: 'json',
+            crossDomain: true,
+            method: 'post',
+            data: $(event).find("option:selected").val(),
+            contentType: "application/json; charset=utf-8",
+            url: localServer + "getArticleById",
+            success: function (data) {
+                loadInfoFieldArticle(data);
+            },
+            error: function (data) {
+                alert("Ocorreu um erro ao obter dados do artigo");
+            }
+        });
+    }
+
+    function loadInfoFieldArticle(idArticleSelected) {
+        updateInfoSelectTags(idArticleSelected.tags);
+        _.map(idArticleSelected, function (val, i) {
+            if (typeof (val) == "string" || typeof (val) == "number") {
+                $("#form input[name='" + i + "']" + "," + "#form textarea[name='" + i + "']").val(val);
+            }
+        });
+        loadInfoAnnotations(idArticleSelected.annotations);
+        loadOptionsTagsToAnnotations(idArticleSelected.tags);
+    }
+
+    function removeInfoTableAnnotations(id) {
+        $('tr#' + id).remove();
+    }
+
+    function insertInfoTableAnnotations(data) {
+        var tags = _.map(data.tags, function (val, i) {
+            return "<li>"+val.name+"</li>"
+        }).join('');
+        $('#tableAnnotations > tbody:last-child').append("<tr id=" + data.id + "><td style='text-align:justify'>" + data.annotations + "</td></td><td><ul>"+tags+"</ul></td><td><button class='btn btn-primary' onclick='removeAnnotation(" + data.id + ")'>Remover</button></td></tr>");
+        $('[data-toggle="popover"]').popover();
+    }
+
+    function loadInfoAnnotations(annotations) {
+        $('#tableAnnotations tbody').empty();
+        _.map(annotations, function (val, i) {
+            insertInfoTableAnnotations(val);
+        });
+    }
+
+    function removeAnnotation(id) {
+        var data = { id: id };
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            crossDomain: true,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(data),
+            url: localServer + "removeAnnotations",
+            success: function (data) {
+                alert("Anotação removida com sucesso!");
+                removeInfoTableAnnotations(data.id);
+            },
+            error: function (data) {
+                alert("Ocorreu um erro ao remover a Anotação");
+            }
+        });
+    }
+
+    function updateInfoSelectArticles(options) {
+        $("#selectTags").val(null).trigger("change");
+        articles = options;
+        $('#form').trigger("reset");
+        $("#selectArticles option").remove();
+        options = _.sortBy(options, ['name']);
+        $(options).map(function (i, val) {
+            $("#selectArticles").append('<option value=' + val.id + '>' + val.name + ' ( ' + val.authors + ' )' + '</option>');
+        });
+    }
+
+    function getAllObras() {
+        $('#tableAnnotations tbody').empty();
+        $.ajax({
+            dataType: 'json',
+            crossDomain: true,
+            contentType: "application/json; charset=utf-8",
+            url: localServer + "getAllArticles",
+            success: function (data) {
+                updateInfoSelectArticles(data);
+            },
+            error: function (data) {
+                alert("Ocorreu um erro ao listar as Obras");
+            }
+        });
+    }
+
+    function removeArticle() {
+        data = {};
+        data["id"] = $("#selectArticles").find("option:selected").val();
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            crossDomain: true,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(data),
+            url: localServer + "removeArticle",
+            success: function (data) {
+                alert("Artigo removido com sucesso!");
+                getAllObras();
+            },
+            error: function (data) {
+                alert("Ocorreu um erro ao remover o Artigo");
+            }
+        });
+
+    }
+
+    function updateArticle() {
+
+        var object = $("#form").serializeArray();
+        var data = {};
+        $(object).each(function (index, obj) {
+            data[obj.name] = obj.value;
+        });
+
+        data["tags"] = [];
+        data["id"] = $("#selectArticles").find("option:selected").val();
+        $("#selectTags").find("option:selected").map(function (i, val) {
+            var tag = {};
+            tag.id = val.value;
+            tag.name = val.text;
+            data["tags"].push(tag);
+        });
+
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            crossDomain: true,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(data),
+            url: localServer + "updateArticle",
+            success: function (data) {
+                alert("Artigo atualizado com sucesso!");
+                getAllObras();
+            },
+            error: function (data) {
+                alert("Ocorreu um erro ao atualizar o Artigo");
+            }
+        });
+
+    }
+
+    function insertAnnotation() {
+        var articleSelected = $("#selectArticles").find("option:selected").val();
+        var annotation = $("#fieldInsertAnnotation").val();
+        if ((!_.isNil(articleSelected)) && (!_.isEmpty(annotation))) {
+            data = { article: { id: articleSelected }, annotations: annotation };
+            data["tags"] = [];
+            $("#selectTagsToAnnotations").find("option:selected").map(function (i, val) {
+                var tag = {};
+                tag.id = val.value;
+                tag.name = val.text;
+                data["tags"].push(tag);
+            });
+            $.ajax({
+                type: "POST",
+                dataType: 'json',
+                crossDomain: true,
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(data),
+                url: localServer + "createAnnotation",
+                success: function (data) {
+                    alert("Anotação inserida com sucesso!");
+                    $('#insertNotification').modal('hide');
+                    $("#fieldInsertAnnotation").val("");
+                    insertInfoTableAnnotations(data);
+                },
+                error: function (data) {
+                    $('#insertNotification').modal('hide');
+                    alert("Ocorreu um erro ao inserir a Anotação");
+                }
+            });
+        }
+        else
+            alert("Verifique se o artigo foi selecionado e o campo de notificação preenchido.");
+
+    }
+
+    function loadInfoLogicalSelect() {
+        var object = $("select[name^='logical']").map(function (i, val) {
+            $(val).append("<option selected value='AND'>AND</option><option value='OR'>OR</option>");
+        });
+    }
+
+    function searchArticle() {
+
+        var object = $("#formCriteriaSearch").serializeArray();
+        var data = {};
+        $(object).each(function (index, obj) {
+            data[obj.name] = obj.value;
+        });
+        data["tags"] = [];
+        $("#criteriaSearchTags").find("option:selected").map(function (i, val) {
+            data["tags"].push(val.value);
+        });
+        var dataValidate = true;
+        if (parseInt(data['yearStart']) > parseInt(data['yearEnd'])) {
+            alert("O ano inicial deve ser menor que o ano final.");
+            dataValidate = false;
+        }
+        dataValidate = (_.some(object, function (val, i) {
+            if (!_.startsWith(val.name, 'logical'))
+                if (!_.isEmpty(val.value))
+                    return val;
+        }) || data["tags"].length > 0) && dataValidate;
+        if (dataValidate) {
+            $.ajax({
+                dataType: 'json',
+                method: 'post',
+                data: JSON.stringify(data),
+                crossDomain: true,
+                contentType: "application/json; charset=utf-8",
+                url: localServer + "getArticlesByCriteria",
+                success: function (data) {
+                    updateInfoSelectArticles(data);
+                    $('#criteriaSearchNotification').modal('hide');
+                },
+                error: function (data) {
+                    $('#criteriaSearchNotification').modal('hide');
+                    alert("Ocorreu um erro ao buscar os artigos");
+                }
+            });
+        }
+        else
+            alert("Verifique se o formulário está preenchido corretamente.");
+    }
+
+    function clearInfoSearch() {
+        $('#formCriteriaSearch').trigger("reset");
+        $("#criteriaSearchTags option").remove();
+        $("#criteriaSearchTags").select2("destroy");
+        $('#criteriaSearchTags').select2({ data: dataTokenTags });
+    }
+
+</script>
+
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="../index.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Cadastrar <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="../cadastrar/cadastroTag.html">Tag</a></li>
+                            <li><a href="../cadastrar/cadastroObra.html">Obra</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Consulta <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="consultaTag.html">Tag</a></li>
+                            <li><a href="consultaAnnotations.html">Anotações</a></li>
+                            <li><a href="#">Obra</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="col-md-6">
+            <div class="form-group has-success">
+                <label class="control-label col-md-6">Consulta Obras</label>
+            </div>
+            <select onchange="loadFieldsArticle(this)" id="selectArticles" size=24 class="form-control">
+            </select>
+            <button class="btn btn-primary" data-toggle="modal" data-target="#criteriaSearchNotification">Busca avançada</button>
+            <button class="btn btn-primary" onclick="getAllObras()">Carregar todas</button>
+        </div>
+        <form id="form" class="form-horizontal">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label class="control-label">Nome</label>
+                    <input class="form-control" name="name" type="text">
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Citação</label>
+                    <textarea class="form-control" name="citation"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Autores</label>
+                    <input class="form-control" name="authors" type="text">
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Ano de publicação</label>
+                    <input class="form-control" name="year" type="text">
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Revista ou evento de publicação</label>
+                    <input class="form-control" name="journalOrEvent" type="text">
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Local do arquivo</label>
+                    <input class="form-control" name="localStorage" type="text">
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Tags</label>
+                    <select class="form-control" multiple="multiple" name="tags" id="selectTags" type="text"></select>
+                    <button class="btn btn-primary" onclick="updateArticle()">Alterar</button>
+                    <button class="btn btn-primary" onclick="removeArticle()">Remover</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="container">
+            <table id="tableAnnotations" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th class="col-md-8">Anotações</th>
+                        <th class="col-md-3">Tags</th>
+                        <th class="col-md-1">Remover</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+            <button class="btn btn-primary" data-toggle="modal" data-target="#insertNotification" onClick="clearTagstoAnnotations()">Inserir anotação</button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="insertNotification" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Inserir anotações no artigo</h4>
+                </div>
+                <div class="modal-body">
+                    <textarea rows=10 class="form-control" id="fieldInsertAnnotation" placeholder="Digite a anotação" type="text"></textarea>
+                    <select style="width: 100%" class="form-control" multiple="multiple" name="tags" id="selectTagsToAnnotations" type="text"></select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="insertAnnotation()">Salvar anotação</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="criteriaSearchNotification" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Parâmetros para busca de artigo</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="formCriteriaSearch">
+                        <div class="form-group">
+                            <label class="control-label">Nome do artigo</label>
+                            <input class="form-control" name="name" type="text">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Autores</label>
+                            <div class="input-group col-md-4">
+                                <div class="input-group-addon">Logical</div>
+                                <select class="form-control " name="logicalAuthors" type="text"></select>
+                            </div>
+                            <input class="form-control" name="authors" type="text">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Ano de publicação</label>
+                            <div class="input-group col-md-4">
+                                <div class="input-group-addon">Logical</div>
+                                <select class="form-control " name="logicalYear" type="text"></select>
+                            </div>
+                            <div class="form-inline">
+                                <div class="input-group">
+                                    <div class="input-group-addon">Inicio</div>
+                                    <input class="form-control " name="yearStart" type="text">
+                                </div>
+                                <div class="input-group">
+                                    <div class="input-group-addon">Fim</div>
+                                    <input class="form-control" name="yearEnd" type="text">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Revista ou evento de publicação</label>
+                            <div class="input-group col-md-4">
+                                <div class="input-group-addon">Logical</div>
+                                <select class="form-control " name="logicalJournalOrEvent" type="text"></select>
+                            </div>
+                            <input class="form-control" name="journalOrEvent" type="text">
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">Tags</label>
+                            <div class="input-group col-md-4">
+                                <div class="input-group-addon">Logical</div>
+                                <select class="form-control" name="logicalTags" type="text"></select>
+                            </div>
+                            <select class="form-control" style="width: 100% !important" multiple="multiple" id="criteriaSearchTags" type="text"></select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="clearInfoSearch()">Limpar</button>
+                    <button type="button" class="btn btn-primary" onclick="searchArticle()">Buscar artigos</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,153 @@
+<html>
+
+<head>
+    <title>Library</title>
+</head>
+<script src="../js/jquery-3.2.1.min.js"></script>
+<script src="../js/bootstrap.min.js"></script>
+<script src="../js/lodash.min.js"></script>
+<link rel="stylesheet" type="text/css" href="../css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+
+<script>
+    var localServer = "http://localhost:8080/Library/"
+    var optionsSelectTags = [];
+    $(document).ready(function () {
+        $("#form").submit(function (e) {
+            return false;
+        });
+    });
+
+    function loadFieldsTag(event) {
+        $("#fieldNameTag").val($(event).find("option:selected").text());
+        $("#fieldIdTag").val(event.value);
+    }
+
+    function updateInfoSelectTags(options) {
+        $('#form').trigger("reset");
+        $("#selectTags option").remove();
+        optionsSelectTags = options;
+        options = _.sortBy(options, ['name']);
+        $(options).map(function (i, val) {
+            $("#selectTags").append('<option value=' + val.id + '>' + val.name + '</option>');
+        });
+    }
+
+    function updateTag() {
+        if ($("#selectTags option:selected").length > 0) {
+            $.ajax({
+                type: "POST",
+                dataType: 'json',
+                crossDomain: true,
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(getInfoForm()),
+                url: localServer + "updateTag",
+                success: function (data) {
+                    alert("Tag atualizada com sucesso!");
+                    getAllTags();
+                },
+                error: function (data) {
+                    alert("Ocorreu um erro ao atualizar a Tag");
+                }
+            });
+        }
+        else
+            alert("Selecione uma Tag para atualizar.")
+    }
+
+    function removeTag() {
+        if ($("#selectTags option:selected").length > 0) {
+            $.ajax({
+                type: "POST",
+                dataType: 'json',
+                crossDomain: true,
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(getInfoForm()),
+                url: localServer + "removeTag",
+                success: function (data) {
+                    alert("Tag removida com sucesso!");
+                    getAllTags();
+                },
+                error: function (data) {
+                    alert("Ocorreu um erro ao remover a Tag");
+                }
+            });
+        }
+        else
+            alert("Selecione uma Tag para atualizar.")
+    }
+
+    function getInfoForm() {
+        var object = $("form").serializeArray();
+        var data = {};
+        $(object).each(function (index, obj) {
+            data[obj.name] = obj.value;
+        });
+        return data;
+    }
+
+    function getAllTags() {
+        $.ajax({
+            dataType: 'json',
+            crossDomain: true,
+            contentType: "application/json; charset=utf-8",
+            url: localServer + "getAllTags",
+            success: function (data) {
+                updateInfoSelectTags(data);
+            },
+            error: function (data) {
+                alert("Ocorreu um erro ao listar as Tags");
+            }
+        });
+    }
+
+</script>
+
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="../index.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Cadastrar <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="../cadastrar/cadastroTag.html">Tag</a></li>
+                            <li><a href="../cadastrar/cadastroObra.html">Obra</a></li>                            
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Consulta <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="consultaTag.html">Tag</a></li>
+                            <li><a href="consultaObra.html">Obra</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <form id="form" class="form-horizontal">
+        <div class="form-group has-success">
+            <label class="control-label col-md-4">Consulta Tag</label>
+        </div>
+        <div class="form-group col-md-6">
+            <select onchange="loadFieldsTag(this)" id="selectTags" size=20 class="form-control">
+            </select>
+            <button class="btn btn-primary pull-right" onclick="getAllTags()">Carregar Tags</button>
+        </div>
+
+        <div class="form-group col-md-4">
+            <label for="email">Id</label>
+            <input readonly name="id" class="form-control" id="fieldIdTag">
+            <label for="email">Nome</label>
+            <input name="name" class="form-control" id="fieldNameTag">
+            <button class="btn btn-primary" onclick="updateTag()">Atualizar</button>
+            <button class="btn btn-primary" onclick="removeTag()">Remover</button>
+        </div>
+
+    </form>
+</body>
+
+</html>

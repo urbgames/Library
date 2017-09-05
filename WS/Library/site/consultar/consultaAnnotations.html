@@ -1,0 +1,185 @@
+<html>
+
+<head>
+    <title>Library</title>
+</head>
+<script src="../js/lodash.min.js"></script>
+<script src="../js/jquery-3.2.1.min.js"></script>
+<script src="../js/bootstrap.min.js"></script>
+<script src="../js/fsh.min.js"></script>
+<script src="../js/select2.min.js"></script>
+<script src="../js/bootstrap-table.js"></script>
+<script src="../js/bootstrap-table-resizable.js"></script>
+<script src="../js/colResizable-1.5.source.js"></script>
+<script src="../js/colResizable-1.5.source.js"></script>
+<script src="../js/bootstrap-table-editable.js"></script>
+<script src="../js/bootstrap-editable.js"></script>
+<link rel="stylesheet" type="text/css" href="../css/bootstrap.css">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<link rel="stylesheet" type="text/css" href="../css/select2.min.css">
+<link rel="stylesheet" href="../css/bootstrap-table.css">
+
+<script>
+    var localServer = "http://localhost:8080/Library/";
+    var dataTokenTags = [];
+
+    $(document).ready(function () {
+        $('#searchTags').select2();
+        getAllTags();
+        $('#table').bootstrapTable({
+            resizable: true,
+            columns: [{
+                field: 'id',
+                title: 'Id',
+                visible: false
+            }, {
+                field: 'annotations',
+                title: 'Anotação',
+                editable: {
+                    type: 'textarea',
+                    mode: 'inline'
+                }
+            }, {
+                field: 'tags',
+                title: 'Tags'
+            }, {
+                field: 'article',
+                title: 'Artigo'
+            }, {
+                field: 'citation',
+                title: 'Citação'
+            }]
+        });
+        $('#table').on('editable-save.bs.table', function (editable, field, row, oldValue, $el) {
+            updateAnnotation({ id: row.id, annotations: row.annotations });
+        });
+
+    });
+
+    function updateAnnotation(annotation) {
+        $.ajax({
+            type: "POST",
+            dataType: 'json',
+            crossDomain: true,
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify(annotation),
+            url: localServer + "updateAnnotation",
+            success: function (data) {
+                console.log(data);
+            },
+            error: function (data) {
+                alert("Ocorreu um erro ao atualizar a Anotação");
+            }
+        });
+
+    }
+
+    function getAllTags() {
+        $.ajax({
+            dataType: 'json',
+            crossDomain: true,
+            contentType: "application/json; charset=utf-8",
+            url: localServer + "getAllTags",
+            success: function (data) {
+                loadOptionsTags(data);
+            },
+            error: function (data) {
+                alert("Ocorreu um erro ao listar as Tags");
+            }
+        });
+    }
+
+    function loadOptionsTags(tags) {
+        _.map(tags, function (val, i) {
+            tag = {}
+            tag.id = val.id;
+            tag.text = val.name;
+            dataTokenTags.push(tag);
+        });
+        $('#searchTags').select2({ data: dataTokenTags });
+    }
+
+    function loadTableAnnotation(data) {
+        var dataTable = [];
+        $('#tableAnnotations').bootstrapTable('load', null);
+        _.map(data, function (val, i) {
+            _.map(val.annotations, function (val2, i2) {
+                var tagsSelected = _.map($("#searchTags").find("option:selected"), function (val, i) { return val.value });
+                var tagsAnnotations = _.map(val2.tags, function (val3, i3) { return val3.id });
+                if (!_.isEmpty(_.intersection(_.map(tagsSelected, _.ary(parseInt, 1)), tagsAnnotations))) {
+                    var tags = _.map(val2.tags, function (val3, i) {
+                        return "<li>" + val3.name + "</li>"
+                    }).join('');
+                    dataTable.push({ id: val2.id, annotations: val2.annotations, tags: tags, article: val.name, citation: val.citation });
+                }
+            });
+        });
+        $('#table').bootstrapTable("load", dataTable);
+    }
+
+    function findAnnotations() {
+        var data = {};
+        data["tags"] = [];
+        $("#searchTags").find("option:selected").map(function (i, val) {
+            data["tags"].push(val.value);
+        });
+        $.ajax({
+            dataType: 'json',
+            method: 'post',
+            data: JSON.stringify(data),
+            crossDomain: true,
+            contentType: "application/json; charset=utf-8",
+            url: localServer + "getAnnotationsByTag",
+            success: function (data) {
+                loadTableAnnotation(data);
+            },
+            error: function (data) {
+                console.log("error");
+            }
+        });
+    }
+
+</script>
+
+<body>
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                    <li><a href="../index.html">Home</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Cadastrar <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="../cadastrar/cadastroTag.html">Tag</a></li>
+                            <li><a href="../cadastrar/cadastroObra.html">Obra</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Consulta <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="consultaTag.html">Tag</a></li>
+                            <li><a href="#">Anotações</a></li>
+                            <li><a href="consultaObra.html">Obra</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="form-group row col-md-12">
+            <label class="control-label">Busca de anotações:</label>
+            <div class="form-inline">
+                <select style="width: 40%" class="form-control" multiple="multiple" name="tags" id="searchTags" type="text"></select>
+                <button class="btn btn-primary" onclick="findAnnotations()">Buscar</button>
+            </div>
+        </div>
+        <div class="form-group row col-md-12">
+            <table id="table"></table>
+        </div>
+    </div>
+
+</body>
+
+</html>
