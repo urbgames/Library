@@ -1,9 +1,0 @@
-127.0.0.1 - - [30/Aug/2017:23:56:53 -0300] "GET / HTTP/1.1" 404 951
-0:0:0:0:0:0:0:1 - - [30/Aug/2017:23:58:58 -0300] "GET /Library/getAllArticles HTTP/1.1" 200 31894
-0:0:0:0:0:0:0:1 - - [30/Aug/2017:23:58:59 -0300] "GET /Library/getAllTags HTTP/1.1" 200 897
-0:0:0:0:0:0:0:1 - - [30/Aug/2017:23:59:02 -0300] "GET /Library/getAllTags HTTP/1.1" 200 897
-0:0:0:0:0:0:0:1 - - [30/Aug/2017:23:59:03 -0300] "GET /Library/getAllArticles HTTP/1.1" 200 31894
-0:0:0:0:0:0:0:1 - - [30/Aug/2017:23:59:06 -0300] "OPTIONS /Library/getArticleById HTTP/1.1" 200 520
-0:0:0:0:0:0:0:1 - - [30/Aug/2017:23:59:06 -0300] "POST /Library/getArticleById HTTP/1.1" 200 637
-0:0:0:0:0:0:0:1 - - [30/Aug/2017:23:59:14 -0300] "OPTIONS /Library/createAnnotation HTTP/1.1" 200 524
-0:0:0:0:0:0:0:1 - - [30/Aug/2017:23:59:15 -0300] "POST /Library/createAnnotation HTTP/1.1" 200 41

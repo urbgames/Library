@@ -1,9 +1,0 @@
-package objects;
-
-import javax.persistence.*;
-
-public class Tag {
-	@javax.persistence.Id
-	private int Id;
-
-}
